@@ -103,12 +103,13 @@ public class ClientConnection implements Runnable {
 
     }
 
-    private void sentListOfFilesToClient() {
-        String[] fileList = new File(serverFilesDir).list();
+    private void uploadFileOnServer(Request request) {
+        File inFile = null;
         try {
-            dataOOS.writeObject(fileList);
-            dataOOS.flush();
-        } catch (IOException e) {
+            inFile = (File) dataOIS.readObject();
+            File newFile = new File(serverFilesDir, request.getFileName());
+            Files.copy(inFile.toPath(), (newFile.toPath()));
+        } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
         }
     }
@@ -123,13 +124,12 @@ public class ClientConnection implements Runnable {
         }
     }
 
-    private void uploadFileOnServer(Request request) {
-        File inFile = null;
+    private void sentListOfFilesToClient() {
+        String[] fileList = new File(serverFilesDir).list();
         try {
-            inFile = (File) dataOIS.readObject();
-            File newFile = new File(serverFilesDir, request.getFileName());
-            Files.copy(inFile.toPath(), (newFile.toPath()));
-        } catch (IOException | ClassNotFoundException e) {
+            dataOOS.writeObject(fileList);
+            dataOOS.flush();
+        } catch (IOException e) {
             e.printStackTrace();
         }
     }
