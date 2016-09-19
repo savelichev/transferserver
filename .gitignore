@@ -1,0 +1,11 @@
+
+/src/
+/target/
+/FileTransferServer.iml
+/.idea/
+/common/common.iml
+/client/client.iml
+/client/target/
+/common/target/
+/server/target/
+/server/server.iml
