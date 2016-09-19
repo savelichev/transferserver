@@ -5,7 +5,13 @@
 /.idea/
 /common/common.iml
 /client/client.iml
+/server/server.iml
 /client/target/
 /common/target/
 /server/target/
-/server/server.iml
+client/src/main/resources/
+client/src/test/
+common/src/main/resources/
+common/src/test/
+server/src/main/resources/
+server/src/test/
