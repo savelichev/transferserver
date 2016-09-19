@@ -11,17 +11,34 @@ import java.net.Socket;
 import java.nio.file.Files;
 
 
+/**
+ * Class for dialog with client. Invokes in new Thread for each client connection.
+ * Wait for commands from client and send data back.
+ */
 public class ClientConnection implements Runnable {
 
 
     private Socket clientCommandSocket;
     private Socket clientDataSocket;
 
+    /**
+     * Server files directory.
+     */
     private final String serverFilesDir = "server_files/";
 
+    /**
+     * Object Input Stream for commands from client.
+     */
     private ObjectInputStream commandOIS;
 
+    /**
+     * Object Output Stream for data transfer to client.
+     */
     private ObjectOutputStream dataOOS;
+
+    /**
+     * Object Input stream for data transfer from client.
+     */
     private ObjectInputStream dataOIS;
 
 
@@ -30,6 +47,16 @@ public class ClientConnection implements Runnable {
         this.clientDataSocket = clientDataSocket;
     }
 
+    /**
+     * Wait for commands from client and invoke relevant method for each command.
+     * Commands:
+     * "PUT + file name" - for uploading file on server.
+     * "GET + file name" - for sending file to client.
+     * "DIR" - for sending to client list of files.
+     * "EXIT" - for exit.
+     * <p>
+     * Commands and data sending thought serialization.
+     */
     private void work() {
 
         try {
@@ -46,32 +73,65 @@ public class ClientConnection implements Runnable {
 
                 switch (command) {
                     case "PUT":
-                        File inFile = (File) dataOIS.readObject();
-                        File newFile = new File(serverFilesDir, request.getFileName());
-                        Files.copy(inFile.toPath(), (newFile.toPath()));
+                        uploadFileOnServer(request);
                         break;
                     case "GET":
-                        File file = new File(serverFilesDir + request.getFileName());
-                        dataOOS.writeObject(file);
-                        dataOOS.flush();
+                        sendFileToClient(request);
                         break;
                     case "DIR":
-                        String[] fileList = new File(serverFilesDir).list();
-                        dataOOS.writeObject(fileList);
-                        dataOOS.flush();
+                        sentListOfFilesToClient();
                         break;
                     default:
                         System.out.println("Incorrect command.");
                         break;
                 }
                 System.out.println("Waiting for a new command...");
-
             }
 
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
+        } finally {
+            try {
+                clientCommandSocket.close();
+                clientDataSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+
         }
 
+    }
+
+    private void sentListOfFilesToClient() {
+        String[] fileList = new File(serverFilesDir).list();
+        try {
+            dataOOS.writeObject(fileList);
+            dataOOS.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void sendFileToClient(Request request) {
+        File file = new File(serverFilesDir + request.getFileName());
+        try {
+            dataOOS.writeObject(file);
+            dataOOS.flush();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private void uploadFileOnServer(Request request) {
+        File inFile = null;
+        try {
+            inFile = (File) dataOIS.readObject();
+            File newFile = new File(serverFilesDir, request.getFileName());
+            Files.copy(inFile.toPath(), (newFile.toPath()));
+        } catch (IOException | ClassNotFoundException e) {
+            e.printStackTrace();
+        }
     }
 
 

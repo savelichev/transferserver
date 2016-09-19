@@ -11,16 +11,45 @@ import java.net.Socket;
 import java.nio.file.Files;
 import java.util.Scanner;
 
+/**
+ * Client app for transfer files with server app. Client connext to two sockets, first for commands, second
+ * for data transfer.
+ */
 public class Client {
 
+
+    /**
+     * Client files directory.
+     */
     private final String clientDir = "client_files/";
 
+
+    /**
+     * Object Output Stream for client commands.
+     */
     private ObjectOutputStream commandOOS;
 
+    /**
+     * Object Output Stream for data from client.
+     */
     private ObjectOutputStream dataOOS;
+
+    /**
+     * Object Output Stream for data from server.
+     */
     private ObjectInputStream dataOIS;
 
 
+    /**
+     * Scan commands from client and invoke relevant method for each command.
+     * Commands:
+     * "PUT + file name" - for uploading file on server.
+     * "GET + file name" - for downloading file from server.
+     * "DIR" - for receiving list of files on server.
+     * "EXIT" - for exit.
+     * <p>
+     * Commands and data sending thought serialization.
+     */
     public void work() {
 
         init();
@@ -113,7 +142,6 @@ public class Client {
 
             dataOOS = new ObjectOutputStream(dataSocket.getOutputStream());
             dataOIS = new ObjectInputStream(dataSocket.getInputStream());
-
         } catch (IOException e) {
             e.printStackTrace();
         }

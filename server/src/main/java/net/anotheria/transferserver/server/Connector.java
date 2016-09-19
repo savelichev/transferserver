@@ -5,12 +5,25 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 
+/**
+ * Connects client to the server.
+ */
 public class Connector implements Runnable {
 
+    /**
+     * Server socket fot commands.
+     */
     private ServerSocket commandServerSocket;
+    /**
+     * Server socket for data transfer.
+     */
     private ServerSocket dataServerSocket;
 
 
+    /**
+     * Start up server for listening sockets for client connection.
+     * Each client connection executes in new thread.
+     */
     public synchronized void startUpCommandServerSocket() {
 
         try {
@@ -20,6 +33,7 @@ public class Connector implements Runnable {
             while (true) {
                 Socket clientCommandSocket = commandServerSocket.accept();
                 Socket clientDataSocket = dataServerSocket.accept();
+
                 new Thread(new ClientConnection(clientCommandSocket, clientDataSocket)).start();
             }
         } catch (IOException e) {
